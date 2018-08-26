@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaProjectionCallback mMediaProjectionCallback;
     private ToggleButton mToggleButton;
     private MediaRecorder mMediaRecorder;
+    boolean flag=false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
                 onToggleScreenShare(v);
             }
         });
-
+        getSetGo();
         mMediaProjectionCallback = new MediaProjectionCallback();
     }
 
@@ -85,12 +86,19 @@ public class MainActivity extends AppCompatActivity {
         mMediaProjection.registerCallback(mMediaProjectionCallback, null);
         mVirtualDisplay = createVirtualDisplay();
         mMediaRecorder.start();
+        flag=true;
+        Utils.turnOn(this.getApplicationContext());
     }
 
     public void onToggleScreenShare(View view) {
         if (((ToggleButton) view).isChecked()) {
-            shareScreen();
-        } else {
+            if (!flag)
+            {
+                getSetGo();
+            }
+        }
+        else{
+            Utils.turnOff(this.getApplicationContext());
             mMediaRecorder.stop();
             mMediaRecorder.reset();
             Log.v(TAG, "Recording Stopped");
@@ -105,12 +113,14 @@ public class MainActivity extends AppCompatActivity {
         }
         mVirtualDisplay = createVirtualDisplay();
         mMediaRecorder.start();
+        flag=true;
     }
 
     private void stopScreenSharing() {
         if (mVirtualDisplay == null) {
             return;
         }
+        Utils.turnOff(this.getApplicationContext());
         mVirtualDisplay.release();
         //mMediaRecorder.release();
     }
@@ -184,6 +194,23 @@ public class MainActivity extends AppCompatActivity {
             mMediaRecorder.setVideoFrameRate(30);
             mMediaRecorder.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
             mMediaRecorder.setOutputFile(getFilePath());
+        }
+    }
+    public void getSetGo()
+    {
+        boolean status=Utils.checkStatus(this.getApplicationContext());
+        if (status)
+        {
+            mToggleButton.setChecked(true);
+            shareScreen();
+        }
+        else if (mToggleButton.isChecked())
+        {
+            shareScreen();
+        }
+        else
+        {
+            mToggleButton.setChecked(false);
         }
     }
 }
